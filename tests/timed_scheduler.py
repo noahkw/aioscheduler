@@ -1,7 +1,7 @@
 import asyncio
 import sys
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, ".")
 
@@ -14,7 +14,7 @@ async def work(n: int) -> None:
 
 
 async def main() -> None:
-    starting_time = datetime.utcnow()
+    starting_time = datetime.now(timezone.utc)
     scheduler = TimedScheduler()
     scheduler.start()
     tasks = []

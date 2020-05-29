@@ -26,7 +26,7 @@ from __future__ import annotations
 import asyncio
 import heapq
 
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Awaitable, List, Optional, Set, Tuple
 from uuid import UUID, uuid4
@@ -55,7 +55,7 @@ class TimedScheduler:
         # Event fired when the loop needs to reset
         self._restart = asyncio.Event()
         if prefer_utc:
-            self._datetime_func = datetime.utcnow
+            self._datetime_func = partial(datetime.now, timezone.utc)
         else:
             self._datetime_func = datetime.now
 

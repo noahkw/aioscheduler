@@ -71,19 +71,24 @@ class TimedScheduler:
             assert next_ is not None and isinstance(
                 next_.priority, datetime
             )  # mypy fix
+
             # Sleep until task will be executed
+            delay = (next_.priority - self._datetime_func()).total_seconds()
+
+            sleep_task = asyncio.create_task(asyncio.sleep(delay))
+            restart_task = asyncio.create_task(self._restart.wait())
+
             done, pending = await asyncio.wait(
-                [
-                    asyncio.sleep(
-                        (next_.priority - self._datetime_func()).total_seconds()
-                    ),
-                    self._restart.wait(),
-                ],
+                [sleep_task, restart_task],
                 return_when=asyncio.FIRST_COMPLETED,
             )
-            fut = done.pop()
-            if fut.result() is True:  # restart event
+
+            for task in pending:
+                task.cancel()
+
+            if restart_task in done and restart_task.result() is True:
                 continue
+
             # Run it
             task = asyncio.create_task(next_.callback)
             self._running.append((next_, task))
